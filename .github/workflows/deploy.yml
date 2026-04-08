@@ -31,6 +31,11 @@ jobs:
       - name: Install JupyterLite build dependencies
         run: pip install -r requirements.txt
 
+      - name: Fetch OpenAPI spec
+        run: |
+          curl -fsSL https://hub.berdl.kbase.us/apis/mcp/openapi.json \
+            -o content/openapi.json
+
       - name: Build JupyterLite site
         run: jupyter lite build --contents content --output-dir _output
 
