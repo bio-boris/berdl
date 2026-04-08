@@ -143,6 +143,10 @@ class _Endpoint:
 
         # 3. Route remaining kwargs to query string or request body
         explicit_body = kwargs.pop("body", None)
+        if explicit_body is not None and not isinstance(explicit_body, dict):
+            raise TypeError(
+                f"'body' must be a dict, got {type(explicit_body).__name__}"
+            )
         query: dict = {}
         body_fields: dict = {}
 
@@ -176,7 +180,7 @@ class _Endpoint:
         resp.raise_for_status()
         try:
             return resp.json()
-        except Exception:
+        except (json.JSONDecodeError, ValueError):
             return resp.text
 
     def __repr__(self) -> str:
@@ -330,8 +334,8 @@ class hub_client:
         try:
             spec = self._load_spec()
         except Exception as exc:
-            print(f"Warning: could not load OpenAPI spec: {exc}")
-            print("Client created without auto-generated methods. Check token/URL.")
+            print(f"Warning: could not load OpenAPI spec ({type(exc).__name__}: {exc})")
+            print("Client created without auto-generated methods. Check the URL and your network connection.")
             return
         self.__dict__["_spec"] = spec
         for path_template, path_item in spec.get("paths", {}).items():
